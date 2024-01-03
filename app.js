@@ -3,7 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 app.use(express.json());
 const cors = require("cors");
-app.use(cors());
+app.use(cors({origin: 'http://localhost:3000'}));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
 require('dotenv').config();
