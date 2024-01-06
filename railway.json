@@ -6,6 +6,8 @@
     "deploy": {
       "numReplicas": 1,
       "sleepApplication": false,
-      "restartPolicyType": "ALWAYS"
+      "restartPolicyType": "ALWAYS",
+      "startCommand": "node app.js --host 0.0.0.0"
     }
   }
+  
