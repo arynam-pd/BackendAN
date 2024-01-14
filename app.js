@@ -35,9 +35,18 @@ const User = mongoose.model("UserDetails");
 const UpcomingMovie = mongoose.model("UpcomingMovieDetails");
 const Feedback = mongoose.model("MovieFeedbackDetails")
 
-app.listen(5000, () => {
+const port = process.env.PORT || 3000;
+
+// Listen on `port` and 0.0.0.0
+app.listen(port, "0.0.0.0", function () {
   console.log("Server Started");
 });
+
+// const port = process.env.PORT || 5000;
+// app.listen(port, () => {
+//   console.log("Server Started");
+//   console.log(`App is running on port ${port}`);
+// });
 
 // Define the route for deleting an image
 app.post('/delete-image', deleteImage);
