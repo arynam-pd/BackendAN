@@ -20,8 +20,10 @@ mongoose
   .catch((e) => console.log(e));
 
 require("./imageDetails");
-require("./movieDetails")
-require("./userDetails")
+require("./movieDetails");
+require("./userDetails");
+require("./upcomingMovieDetails");
+require("./movieFeedbackDetails");
 const deleteImage = require('./deleteImage');
 
 // Parse JSON request bodies
@@ -30,17 +32,12 @@ app.use(express.json());
 const Images = mongoose.model("ImageDetails");
 const Movie = mongoose.model("MovieDetails");
 const User = mongoose.model("UserDetails");
+const UpcomingMovie = mongoose.model("UpcomingMovieDetails");
+const Feedback = mongoose.model("MovieFeedbackDetails")
 
-const port = process.env.PORT || 3000;
-
-// Listen on `port` and 0.0.0.0
-app.listen(port, "0.0.0.0", function () {
+app.listen(5000, () => {
   console.log("Server Started");
 });
-
-// app.listen(port, () => {
-//   console.log("Server Started");
-// });
 
 // Define the route for deleting an image
 app.post('/delete-image', deleteImage);
@@ -196,7 +193,6 @@ app.post("/allFavoritesMovie", async (req, res) => {
 // Remove movie from favourite list
 app.post("/removeMovie", async (req, res) => {
   const { movie_id, userid } = req.body;
-
   try {
     // Remove the movie from the User collection
     await User.deleteOne({ movieid: movie_id, userid: userid });
@@ -206,3 +202,77 @@ app.post("/removeMovie", async (req, res) => {
     res.send({ status: "error", data: error.message });
   }
 });
+
+// Upload Upcoming Movie
+app.post("/upload-upcoming-movie", async (req, res) => {
+  const { Pid, name, image, formattedDate } = req.body;
+  try {
+    const oldestMovie = await UpcomingMovie.findOne({}, {}, { sort: { uploadDate: 1 } });
+    if (oldestMovie) {
+      await UpcomingMovie.findOneAndDelete({ _id: oldestMovie._id });
+    }
+    await UpcomingMovie.create({
+      Pid,
+      name,
+      image,
+      formattedDate,
+    });
+    res.send({ status: "ok" });
+  } catch (error) {
+    res.send({ status: "error", data: error });
+  }
+});
+
+// Post Upcoming Movie Data
+app.post("/upcomingMovieData", async (req, res) => {
+  try {
+    const lastTwoMovies = await UpcomingMovie.find().sort({ _id: -1 }).limit(2); // Sort by _id in descending order and limit to 2 documents
+    res.send({ status: "ok", data: lastTwoMovies });
+  } catch (error) {
+    res.send({ status: "error", data: error });
+  }
+});
+
+// Upload User Feedback
+app.post("/upload-movie-feedback", async (req, res) => {
+  const { feedback, rating} = req.body;
+  try {
+    await Feedback.create({ 
+      feedback,
+      rating,
+    });
+    res.send({ Status: "ok" })
+  } catch (error) {
+    res.send({ Status: "error", data: error });
+  }
+})
+
+// Get User Feedback
+app.post("/feedbackData", async (req, res) => {
+  try {
+    const lastTwoMovies = await Feedback.find().sort({ _id: -1 }).limit(3); // Sort by _id in descending order and limit to 2 documents
+    res.send({ status: "ok", data: lastTwoMovies });
+  } catch (error) {
+    res.send({ status: "error", data: error });
+  }
+});
+
+// Get top 3 favorites movie data added by most users
+app.post("/topFavoritesMovie", async (req, res) => {
+  try {
+    const topFavouriteMovies = await User.aggregate([
+      { $group: { _id: "$movieid", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 3 },
+    ]);
+
+    const topMovieIds = topFavouriteMovies.map((movie) => movie._id);
+
+    const topMoviesData = await Movie.find({ _id: { $in: topMovieIds } }).sort({ _id: -1 });
+
+    res.send({ status: "ok", data: topMoviesData });
+  } catch (error) {
+    res.send({ status: "error", data: error });
+  }
+});
+
