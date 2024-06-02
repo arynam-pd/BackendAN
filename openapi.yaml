@@ -1,101 +1,475 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-  title: OpenAPI definition
-  version: v0
+  title: Express App API
+  description: >
+    This is a sample API specification for an Express application that handles movies, images, and user favorites.
+  version: 1.0.0
 servers:
-- url: http://localhost:8080
-  description: Generated server url
+  - url: http://localhost:8080
+tags:
+  - name: movies
+    description: Operations related to movies
+  - name: images
+    description: Operations related to images
+  - name: users
+    description: Operations related to user favorites
+  - name: feedback
+    description: Operations related to movie feedback
 paths:
-  /api/employees/{employeeId}:
-    put:
+  /delete-image:
+    post:
       tags:
-      - employee-controller
-      operationId: updatedEmployee
-      parameters:
-      - name: employeeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - images
+      summary: Delete an image
+      operationId: deleteImage
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmployeeRequest'
-        required: true
+              type: object
+              properties:
+                public_id:
+                  type: string
       responses:
         "200":
-          description: OK
+          description: Image deleted successfully
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
-    delete:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /singleMovieData/{_id}:
+    post:
       tags:
-      - employee-controller
-      operationId: deleteEmployee
+        - movies
+      summary: Get single movie data by ID
+      operationId: getSingleMovieData
       parameters:
-      - name: employeeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "204":
-          description: No Content
-  /api/employees:
-    get:
-      tags:
-      - employee-controller
-      operationId: getEmployees
+        - name: _id
+          in: path
+          description: ID of the movie to retrieve
+          required: true
+          schema:
+            type: string
       responses:
         "200":
-          description: OK
+          description: Movie data retrieved
           content:
-            '*/*':
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+  /categoryCounts:
+    post:
+      tags:
+        - users
+      summary: Get category counts for a user
+      operationId: getCategoryCounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userid:
+                  type: string
+      responses:
+        "200":
+          description: Counts retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      movies:
+                        type: integer
+                      webSeries:
+                        type: integer
+                      anime:
+                        type: integer
+  /webSeriesByCategory:
+    post:
+      tags:
+        - movies
+      summary: Get web series by category
+      operationId: getWebSeriesByCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+      responses:
+        "200":
+          description: Web series retrieved
+          content:
+            application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Employee'
+                  $ref: "#/components/schemas/Movie"
+  /movieData:
     post:
       tags:
-      - employee-controller
-      operationId: createEmployee
+        - movies
+      summary: Get all movie data
+      operationId: getAllMovieData
+      responses:
+        "200":
+          description: All movie data retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movie"
+  /allMovieData:
+    get:
+      tags:
+        - movies
+      summary: Get all movie data
+      operationId: getAllMovieData
+      responses:
+        "200":
+          description: All movie data retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movie"
+  /upload-movie:
+    post:
+      tags:
+        - movies
+      summary: Upload a new movie
+      operationId: uploadMovie
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmployeeRequest'
-        required: true
+              $ref: "#/components/schemas/MovieRequest"
       responses:
         "201":
-          description: Created
+          description: Movie uploaded
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                type: object
+                properties:
+                  status:
+                    type: string
+  /deleteMovie:
+    post:
+      tags:
+        - movies
+      summary: Delete a movie by ID
+      operationId: deleteMovie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movie_id:
+                  type: string
+      responses:
+        "200":
+          description: Movie deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: string
+  /movieUpdate:
+    post:
+      tags:
+        - movies
+      summary: Update movie status by ID
+      operationId: updateMovie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+                downloadLink:
+                  type: string
+      responses:
+        "200":
+          description: Movie updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: string
+  /favourate-movie:
+    post:
+      tags:
+        - users
+      summary: Add a favourite movie for a user
+      operationId: addFavouriteMovie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movieid:
+                  type: string
+                userid:
+                  type: string
+      responses:
+        "200":
+          description: Movie added to favourites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+  /allFavoritesMovie:
+    post:
+      tags:
+        - users
+      summary: Get all favourite movies for a user
+      operationId: getAllFavoritesMovie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userid:
+                  type: string
+      responses:
+        "200":
+          description: Favourites retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movie"
+  /removeMovie:
+    post:
+      tags:
+        - users
+      summary: Remove a movie from user favourites
+      operationId: removeFavouriteMovie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movie_id:
+                  type: string
+                userid:
+                  type: string
+      responses:
+        "200":
+          description: Movie removed from favourites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: string
+  /upload-upcoming-movie:
+    post:
+      tags:
+        - movies
+      summary: Upload an upcoming movie
+      operationId: uploadUpcomingMovie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Pid:
+                  type: string
+                name:
+                  type: string
+                image:
+                  type: string
+                formattedDate:
+                  type: string
+      responses:
+        "201":
+          description: Upcoming movie uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /upcomingMovieData:
+    post:
+      tags:
+        - movies
+      summary: Get all upcoming movie data
+      operationId: getUpcomingMovieData
+      responses:
+        "200":
+          description: Upcoming movies retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UpcomingMovie"
+  /upload-movie-feedback:
+    post:
+      tags:
+        - feedback
+      summary: Upload feedback for a movie
+      operationId: uploadMovieFeedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                feedback:
+                  type: string
+                rating:
+                  type: integer
+                  format: int32
+      responses:
+        "201":
+          description: Feedback uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /feedbackData:
+    post:
+      tags:
+        - feedback
+      summary: Get all feedback data
+      operationId: getFeedbackData
+      responses:
+        "200":
+          description: Feedback data retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Feedback"
+  /topFavoritesMovie:
+    post:
+      tags:
+        - movies
+      summary: Get top favourite movies
+      operationId: getTopFavoritesMovie
+      responses:
+        "200":
+          description: Top favourite movies retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movie"
 components:
   schemas:
-    EmployeeRequest:
+    MovieRequest:
       type: object
       properties:
-        firstName:
+        Pid:
           type: string
-        lastName:
+        name:
           type: string
-        email:
+        information:
           type: string
-    Employee:
+        trailerLink:
+          type: string
+        downloadLink:
+          type: string
+        language:
+          type: string
+        image:
+          type: string
+        genre:
+          type: string
+        category:
+          type: string
+        formattedDate:
+          type: string
+    Movie:
       type: object
       properties:
         id:
+          type: string
+        Pid:
+          type: string
+        name:
+          type: string
+        information:
+          type: string
+        trailerLink:
+          type: string
+        downloadLink:
+          type: string
+        language:
+          type: string
+        image:
+          type: string
+        genre:
+          type: string
+        category:
+          type: string
+        formattedDate:
+          type: string
+    UpcomingMovie:
+      type: object
+      properties:
+        id:
+          type: string
+        Pid:
+          type: string
+        name:
+          type: string
+        image:
+          type: string
+        formattedDate:
+          type: string
+    Feedback:
+      type: object
+      properties:
+        feedback:
+          type: string
+        rating:
           type: integer
           format: int32
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
